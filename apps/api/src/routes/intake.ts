@@ -10,7 +10,7 @@ const intakeSchema = z.object({
   sourceType: z.string(),
   sourceRef: z.string().optional(),
   submittedBy: z.string().optional(),
-  content: z.record(z.any())
+  content: z.record(z.string(), z.any())
 });
 
 intakeRouter.post('/intake', async (req, res) => {
@@ -53,3 +53,4 @@ intakeRouter.post('/router/process', async (req, res) => {
     res.status(400).json({ error: (error as Error).message });
   }
 });
+
