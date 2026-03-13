@@ -1,0 +1,68 @@
+{
+  "tools": [
+    {
+      "name": "getDashboardState",
+      "description": "Read the full dashboard state for Megan Campaign HQ.",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "createIntakeItem",
+      "description": "Create a new intake item for router processing.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "sourceType": { "type": "string" },
+          "submittedBy": { "type": "string" },
+          "content": { "type": "object" }
+        },
+        "required": ["sourceType", "content"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "processIntakeItem",
+      "description": "Run routing on an intake item and create downstream objects.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "intakeItemId": { "type": "string", "format": "uuid" }
+        },
+        "required": ["intakeItemId"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "requestApproval",
+      "description": "Create an approval request for a governed action.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "approvalType": { "type": "string" },
+          "objectType": { "type": "string" },
+          "objectId": { "type": "string" },
+          "description": { "type": "string" },
+          "requestedBy": { "type": "string" }
+        },
+        "required": ["approvalType", "objectType", "description"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "generateReport",
+      "description": "Generate a report and store a generated_reports record.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "reportType": { "type": "string" },
+          "generatedBy": { "type": "string" }
+        },
+        "required": ["reportType"],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

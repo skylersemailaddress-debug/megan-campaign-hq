@@ -1,0 +1,82 @@
+import { Panel } from './Panel';
+import { AskHQPane } from './AskHQPane';
+import { AnalyticsChart } from './AnalyticsChart';
+
+export function HQDashboard({
+  dashboardState,
+  analyticsSummary
+}: {
+  dashboardState: any;
+  analyticsSummary: any;
+}) {
+  return (
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.15),_transparent_35%),_#0b1020] p-6">
+      <div className="mx-auto max-w-7xl">
+        <header className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Megan Campaign HQ</h1>
+            <p className="mt-1 text-sm text-slate-300">Single front-door AI campaign operating system</p>
+          </div>
+          <div className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300">
+            Priority items: {dashboardState.today.priorityCount}
+          </div>
+        </header>
+
+        <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
+          <div className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              <Panel title="Today">
+                <div className="text-lg font-medium">{dashboardState.today.summary}</div>
+              </Panel>
+              <Panel title="Signals">
+                <div className="text-3xl font-bold">{dashboardState.signals.length}</div>
+                <div className="mt-2 text-sm text-slate-300">Open monitored signals</div>
+              </Panel>
+              <Panel title="Approvals">
+                <div className="text-3xl font-bold">{dashboardState.approvals.length}</div>
+                <div className="mt-2 text-sm text-slate-300">Pending or recent governed actions</div>
+              </Panel>
+            </div>
+
+            <div className="grid gap-6 xl:grid-cols-2">
+              <Panel title="Events">
+                <ul className="space-y-3 text-sm text-slate-200">
+                  {dashboardState.events.length ? dashboardState.events.map((event: any) => (
+                    <li key={event.id} className="rounded-xl border border-white/10 p-3">
+                      <div className="font-medium">{event.event_name}</div>
+                      <div className="text-slate-400">Status: {event.status}</div>
+                    </li>
+                  )) : <li className="text-slate-400">No events yet.</li>}
+                </ul>
+              </Panel>
+              <Panel title="Website Queue">
+                <ul className="space-y-3 text-sm text-slate-200">
+                  {dashboardState.websiteQueue.length ? dashboardState.websiteQueue.map((item: any) => (
+                    <li key={item.id} className="rounded-xl border border-white/10 p-3">
+                      <div className="font-medium">{item.change_type}</div>
+                      <div className="text-slate-400">Status: {item.status}</div>
+                    </li>
+                  )) : <li className="text-slate-400">No website requests yet.</li>}
+                </ul>
+              </Panel>
+            </div>
+
+            <div className="grid gap-6 xl:grid-cols-2">
+              <AnalyticsChart title="Signals by Category" data={analyticsSummary.signalsByCategory ?? []} />
+              <AnalyticsChart title="Approvals by Type" data={analyticsSummary.approvalsByType ?? []} />
+            </div>
+          </div>
+
+          <aside className="space-y-6">
+            <AskHQPane />
+            <Panel title="Selected Item Context">
+              <div className="text-sm text-slate-300">
+                Detail drawer placeholder. Bind this to item selection so users can inspect history, charts, reports, and actions.
+              </div>
+            </Panel>
+          </aside>
+        </div>
+      </div>
+    </main>
+  );
+}
