@@ -1,0 +1,85 @@
+{
+  "version": "1.0",
+  "description": "Commands the Megan HQ shell can execute so the dashboard runtime can manipulate the UI like an operator console.",
+  "commands": [
+    {
+      "name": "navigate",
+      "payload": {
+        "route": "string",
+        "panel": "optional string",
+        "reason": "string"
+      }
+    },
+    {
+      "name": "open_panel",
+      "payload": {
+        "panel": "string",
+        "context_id": "optional string",
+        "reason": "string"
+      }
+    },
+    {
+      "name": "set_filter",
+      "payload": {
+        "target": "string",
+        "filter": {}
+      }
+    },
+    {
+      "name": "surface_signal",
+      "payload": {
+        "signal_id": "string",
+        "priority": "Early Watch | Pattern Watch | War Room Watch | Active Response"
+      }
+    },
+    {
+      "name": "queue_decision",
+      "payload": {
+        "title": "string",
+        "summary": "string",
+        "owner": "string",
+        "approval_required": true
+      }
+    },
+    {
+      "name": "draft_response",
+      "payload": {
+        "target": "string",
+        "content": "string"
+      }
+    },
+    {
+      "name": "hydrate_context",
+      "payload": {
+        "sources": [
+          "campaign_brain",
+          "working_memory",
+          "signals",
+          "approvals",
+          "events"
+        ],
+        "reason": "string"
+      }
+    }
+  ],
+  "response_envelope": {
+    "assistant_text": "string",
+    "routing": {
+      "input_type": "string",
+      "primary_owner": "string",
+      "secondary_owners": [
+        "string"
+      ],
+      "signal_status": "string",
+      "dashboard_bucket": "string"
+    },
+    "memory_actions": [
+      {
+        "target": "campaign_brain | working_memory | none",
+        "action": "append | replace | archive_then_replace | none",
+        "reason": "string"
+      }
+    ],
+    "ui_commands": []
+  }
+}

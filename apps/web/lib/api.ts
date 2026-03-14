@@ -1,13 +1,30 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000';
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+  "https://megancampaginhq-production.up.railway.app";
 
-export async function getDashboardState() {
-  const res = await fetch(`${API_BASE_URL}/dashboard/state`, { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to load dashboard state');
+async function fetchJson(path: string) {
+  const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`API request failed: ${res.status} ${path}`);
+  }
   return res.json();
 }
 
+export async function getDashboardState() {
+  return fetchJson("/dashboard/state");
+}
+
 export async function getAnalyticsSummary() {
-  const res = await fetch(`${API_BASE_URL}/analytics/summary`, { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to load analytics summary');
-  return res.json();
+  try {
+    return await fetchJson("/analytics/summary");
+  } catch {
+    return {
+      signalsByCategory: [],
+      approvalsByType: [],
+    };
+  }
+}
+
+export async function fetchDashboardState() {
+  return getDashboardState();
 }

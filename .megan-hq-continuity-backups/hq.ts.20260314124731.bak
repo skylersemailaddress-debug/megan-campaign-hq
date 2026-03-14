@@ -1,0 +1,160 @@
+﻿import express from "express";
+import fs from "fs";
+import path from "path";
+import { composeBrainPrompt } from "../brain/composeBrainPrompt";
+import { loadMemory } from "../services/memoryLoader";
+import { loadSessionMemory, appendSessionTurn } from "../services/sessionSummaryService";
+
+export const hqRouter = express.Router();
+
+function readBrainFile(fileName: string): string {
+  const filePath = path.resolve(process.cwd(), "../../brain", fileName);
+  try {
+    return fs.readFileSync(filePath, "utf8").trim();
+  } catch {
+    return "";
+  }
+}
+
+function buildParitySystemPrompt(params: {
+  dashboardState: any;
+  campaignBrain: any;
+  workingMemory: any;
+  sessionSummary: string;
+  recentTurns: any[];
+}) {
+  const promptCore = readBrainFile("megan_hq_system_prompt.txt");
+  const identity = readBrainFile("megan_hq_identity.md");
+  const memoryPolicy = readBrainFile("memory_write_policy.md");
+  const runtimeSpec = readBrainFile("hq_chat_runtime_spec.md");
+  const uiContract = readBrainFile("ui_command_contract.json");
+  const runtimeContext = composeBrainPrompt(params.dashboardState);
+
+  return [
+    promptCore,
+    "",
+    "IDENTITY",
+    identity,
+    "",
+    "MEMORY WRITE POLICY",
+    memoryPolicy,
+    "",
+    "RUNTIME SPEC",
+    runtimeSpec,
+    "",
+    "UI COMMAND CONTRACT",
+    uiContract,
+    "",
+    "CAMPAIGN BRAIN",
+    JSON.stringify(params.campaignBrain || {}, null, 2),
+    "",
+    "WORKING MEMORY",
+    JSON.stringify(params.workingMemory || {}, null, 2),
+    "",
+    "SESSION SUMMARY",
+    params.sessionSummary || "",
+    "",
+    "RECENT SESSION TURNS",
+    JSON.stringify(params.recentTurns || [], null, 2),
+    "",
+    "RUNTIME CONTEXT",
+    runtimeContext
+  ].filter(Boolean).join("\n\n");
+}
+
+hqRouter.post("/chat", async (req, res) => {
+  try {
+    const message = String(req.body?.message || "").trim();
+    const sessionId = String(req.body?.session_id || req.body?.sessionId || "default").trim();
+
+    if (!message) {
+      return res.status(400).json({ error: "message required" });
+    }
+
+    let dashboardState: any = {};
+    try {
+      const dashboardRes = await fetch("http://127.0.0.1:4000/dashboard/state");
+      dashboardState = await dashboardRes.json();
+    } catch {
+      dashboardState = {};
+    }
+
+    let campaignBrain: any = {};
+    let workingMemory: any = {};
+    try {
+      const memory = await loadMemory();
+      campaignBrain = memory.campaignBrain || {};
+      workingMemory = memory.workingMemory || {};
+    } catch {
+      campaignBrain = {};
+      workingMemory = {};
+    }
+
+    const sessionMemory = loadSessionMemory(sessionId);
+    appendSessionTurn(sessionId, "user", message);
+
+    const systemPrompt = buildParitySystemPrompt({
+      dashboardState,
+      campaignBrain,
+      workingMemory,
+      sessionSummary: sessionMemory.summary,
+      recentTurns: sessionMemory.recentTurns
+    });
+
+    const openaiRes = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: Bearer ,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+        input: [
+          {
+            role: "system",
+            content: [{ type: "input_text", text: systemPrompt }]
+          },
+          {
+            role: "user",
+            content: [{ type: "input_text", text: message }]
+          }
+        ]
+      })
+    });
+
+    if (!openaiRes.ok) {
+      const errorText = await openaiRes.text();
+      return res.status(500).json({
+        error: "OpenAI request failed",
+        details: errorText
+      });
+    }
+
+    const data = await openaiRes.json();
+
+    const text =
+      data.output_text ||
+      data.output
+        ?.flatMap((item: any) => item.content || [])
+        ?.filter((content: any) => content.type === "output_text")
+        ?.map((content: any) => content.text)
+        ?.join("\n") ||
+      "No response";
+
+    appendSessionTurn(sessionId, "assistant", text);
+
+    res.json({
+      assistant_text: text,
+      routing: {},
+      memory_actions: [],
+      ui_commands: [],
+      meta: {
+        parity_mode: true,
+        session_memory_enabled: true,
+        session_id: sessionId
+      }
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});

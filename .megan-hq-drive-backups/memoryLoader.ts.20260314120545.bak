@@ -1,0 +1,6 @@
+﻿export async function loadMemory(){
+ return {
+  campaignBrain:{},
+  workingMemory:{}
+ };
+}

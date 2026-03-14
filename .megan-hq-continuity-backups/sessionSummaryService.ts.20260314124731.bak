@@ -1,0 +1,79 @@
+﻿import fs from "fs";
+import path from "path";
+
+type SessionTurn = {
+  role: "user" | "assistant";
+  text: string;
+  createdAt: string;
+};
+
+type SessionFile = {
+  sessionId: string;
+  updatedAt: string;
+  summary: string;
+  turns: SessionTurn[];
+};
+
+function getSessionDir(): string {
+  return path.resolve(process.cwd(), "../../brain/runtime_sessions");
+}
+
+function ensureSessionDir(): void {
+  fs.mkdirSync(getSessionDir(), { recursive: true });
+}
+
+function getSessionPath(sessionId: string): string {
+  return path.join(getSessionDir(), ${sessionId}.json);
+}
+
+function compactSummary(turns: SessionTurn[]): string {
+  const recent = turns.slice(-12).map((t) => ${t.role.toUpperCase()}: ).join("\n");
+  return recent.slice(0, 4000);
+}
+
+export function loadSessionMemory(sessionId: string): { summary: string; recentTurns: SessionTurn[] } {
+  ensureSessionDir();
+
+  const filePath = getSessionPath(sessionId);
+  if (!fs.existsSync(filePath)) {
+    return { summary: "", recentTurns: [] };
+  }
+
+  const data = JSON.parse(fs.readFileSync(filePath, "utf8")) as SessionFile;
+  return {
+    summary: data.summary || "",
+    recentTurns: Array.isArray(data.turns) ? data.turns.slice(-8) : []
+  };
+}
+
+export function appendSessionTurn(sessionId: string, role: "user" | "assistant", text: string): void {
+  ensureSessionDir();
+
+  const filePath = getSessionPath(sessionId);
+  let data: SessionFile = {
+    sessionId,
+    updatedAt: new Date().toISOString(),
+    summary: "",
+    turns: []
+  };
+
+  if (fs.existsSync(filePath)) {
+    data = JSON.parse(fs.readFileSync(filePath, "utf8")) as SessionFile;
+  }
+
+  data.turns = Array.isArray(data.turns) ? data.turns : [];
+  data.turns.push({
+    role,
+    text: text.slice(0, 4000),
+    createdAt: new Date().toISOString()
+  });
+
+  if (data.turns.length > 24) {
+    data.turns = data.turns.slice(-24);
+  }
+
+  data.summary = compactSummary(data.turns);
+  data.updatedAt = new Date().toISOString();
+
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+}

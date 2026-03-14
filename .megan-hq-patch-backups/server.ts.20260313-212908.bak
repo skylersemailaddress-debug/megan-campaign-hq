@@ -1,0 +1,38 @@
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+
+import { intakeRouter } from "./routes/intake";
+import { dashboardRouter } from "./routes/dashboard";
+import { approvalsRouter } from "./routes/approvals";
+import { reportsRouter } from "./routes/reports";
+import { analyticsRouter } from "./routes/analytics";
+import { hqRouter } from "./routes/hq";
+
+const app = express();
+const port = Number(process.env.PORT || 4000);
+
+app.use(cors({ origin: true, credentials: true }));
+app.use(express.json());
+
+app.get("/", (_req, res) => {
+  res.json({
+    ok: true,
+    service: "Megan Campaign HQ API",
+  });
+});
+
+app.get("/health", (_req, res) => {
+  res.json({ ok: true });
+});
+
+app.use("/intake", intakeRouter);
+app.use("/dashboard", dashboardRouter);
+app.use("/approvals", approvalsRouter);
+app.use("/reports", reportsRouter);
+app.use("/analytics", analyticsRouter);
+app.use("/hq", hqRouter);
+
+app.listen(port, () => {
+  console.log(`Megan Campaign HQ API listening on http://localhost:${port}`);
+});

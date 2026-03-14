@@ -1,4 +1,4 @@
-import { Panel } from './Panel';
+﻿import { Panel } from './Panel';
 import AskHQPane from "./AskHQPane";
 import { AnalyticsChart } from './AnalyticsChart';
 
@@ -9,36 +9,6 @@ export function HQDashboard({
   dashboardState: any;
   analyticsSummary: any;
 }) {
-  const safeDashboardState = {
-    today: {
-      priorityCount: 0,
-      summary: "No priority items right now."
-    },
-    signals: [] as any[],
-    approvals: [] as any[],
-    events: [] as any[],
-    websiteQueue: [] as any[],
-    ...(dashboardState ?? {}),
-    today: {
-      priorityCount: 0,
-      summary: "No priority items right now.",
-      ...((dashboardState ?? {}).today ?? {})
-    },
-    signals: Array.isArray(dashboardState?.signals) ? dashboardState.signals : [],
-    approvals: Array.isArray(dashboardState?.approvals) ? dashboardState.approvals : [],
-    events: Array.isArray(dashboardState?.events) ? dashboardState.events : [],
-    websiteQueue: Array.isArray(dashboardState?.websiteQueue) ? dashboardState.websiteQueue : []
-  };
-
-  const safeAnalyticsSummary = {
-    signalsByCategory: Array.isArray(analyticsSummary?.signalsByCategory)
-      ? analyticsSummary.signalsByCategory
-      : [],
-    approvalsByType: Array.isArray(analyticsSummary?.approvalsByType)
-      ? analyticsSummary.approvalsByType
-      : []
-  };
-
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.15),_transparent_35%),_#0b1020] p-6">
       <div className="mx-auto max-w-7xl">
@@ -92,8 +62,8 @@ export function HQDashboard({
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <AnalyticsChart title="Signals by Category" data={safeAnalyticsSummary.signalsByCategory} />
-              <AnalyticsChart title="Approvals by Type" data={safeAnalyticsSummary.approvalsByType} />
+              <AnalyticsChart title="Signals by Category" data={analyticsSummary.signalsByCategory ?? []} />
+              <AnalyticsChart title="Approvals by Type" data={analyticsSummary.approvalsByType ?? []} />
             </div>
           </div>
 
@@ -110,3 +80,6 @@ export function HQDashboard({
     </main>
   );
 }
+
+
+

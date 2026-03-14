@@ -9,36 +9,6 @@ export function HQDashboard({
   dashboardState: any;
   analyticsSummary: any;
 }) {
-  const safeDashboardState = {
-    today: {
-      priorityCount: 0,
-      summary: "No priority items right now."
-    },
-    signals: [] as any[],
-    approvals: [] as any[],
-    events: [] as any[],
-    websiteQueue: [] as any[],
-    ...(dashboardState ?? {}),
-    today: {
-      priorityCount: 0,
-      summary: "No priority items right now.",
-      ...((dashboardState ?? {}).today ?? {})
-    },
-    signals: Array.isArray(dashboardState?.signals) ? dashboardState.signals : [],
-    approvals: Array.isArray(dashboardState?.approvals) ? dashboardState.approvals : [],
-    events: Array.isArray(dashboardState?.events) ? dashboardState.events : [],
-    websiteQueue: Array.isArray(dashboardState?.websiteQueue) ? dashboardState.websiteQueue : []
-  };
-
-  const safeAnalyticsSummary = {
-    signalsByCategory: Array.isArray(analyticsSummary?.signalsByCategory)
-      ? analyticsSummary.signalsByCategory
-      : [],
-    approvalsByType: Array.isArray(analyticsSummary?.approvalsByType)
-      ? analyticsSummary.approvalsByType
-      : []
-  };
-
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.15),_transparent_35%),_#0b1020] p-6">
       <div className="mx-auto max-w-7xl">
@@ -48,7 +18,7 @@ export function HQDashboard({
             <p className="mt-1 text-sm text-slate-300">Single front-door AI campaign operating system</p>
           </div>
           <div className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300">
-            Priority items: {safeDashboardState.today.priorityCount}
+            Priority items: {dashboardState.today.priorityCount}
           </div>
         </header>
 
@@ -56,14 +26,14 @@ export function HQDashboard({
           <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               <Panel title="Today">
-                <div className="text-lg font-medium">{safeDashboardState.today.summary}</div>
+                <div className="text-lg font-medium">{dashboardState.today.summary}</div>
               </Panel>
               <Panel title="Signals">
-                <div className="text-3xl font-bold">{safeDashboardState.signals.length}</div>
+                <div className="text-3xl font-bold">{dashboardState.signals.length}</div>
                 <div className="mt-2 text-sm text-slate-300">Open monitored signals</div>
               </Panel>
               <Panel title="Approvals">
-                <div className="text-3xl font-bold">{safeDashboardState.approvals.length}</div>
+                <div className="text-3xl font-bold">{dashboardState.approvals.length}</div>
                 <div className="mt-2 text-sm text-slate-300">Pending or recent governed actions</div>
               </Panel>
             </div>
@@ -71,7 +41,7 @@ export function HQDashboard({
             <div className="grid gap-6 xl:grid-cols-2">
               <Panel title="Events">
                 <ul className="space-y-3 text-sm text-slate-200">
-                  {safeDashboardState.events.length ? safeDashboardState.events.map((event: any) => (
+                  {dashboardState.events.length ? dashboardState.events.map((event: any) => (
                     <li key={event.id} className="rounded-xl border border-white/10 p-3">
                       <div className="font-medium">{event.event_name}</div>
                       <div className="text-slate-400">Status: {event.status}</div>
@@ -81,7 +51,7 @@ export function HQDashboard({
               </Panel>
               <Panel title="Website Queue">
                 <ul className="space-y-3 text-sm text-slate-200">
-                  {safeDashboardState.websiteQueue.length ? safeDashboardState.websiteQueue.map((item: any) => (
+                  {dashboardState.websiteQueue.length ? dashboardState.websiteQueue.map((item: any) => (
                     <li key={item.id} className="rounded-xl border border-white/10 p-3">
                       <div className="font-medium">{item.change_type}</div>
                       <div className="text-slate-400">Status: {item.status}</div>
@@ -92,8 +62,8 @@ export function HQDashboard({
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <AnalyticsChart title="Signals by Category" data={safeAnalyticsSummary.signalsByCategory} />
-              <AnalyticsChart title="Approvals by Type" data={safeAnalyticsSummary.approvalsByType} />
+              <AnalyticsChart title="Signals by Category" data={analyticsSummary.signalsByCategory ?? []} />
+              <AnalyticsChart title="Approvals by Type" data={analyticsSummary.approvalsByType ?? []} />
             </div>
           </div>
 
@@ -110,3 +80,4 @@ export function HQDashboard({
     </main>
   );
 }
+

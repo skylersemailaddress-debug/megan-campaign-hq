@@ -1,0 +1,27 @@
+{
+  "updatedAt": "2026-03-14T19:46:35.053Z",
+  "sessionId": "default",
+  "summary": "USER: What is Megan HQ?\nUSER: Diagnostic ping from ChatGPT to Megan Campaign HQ hqChat endpoint\nUSER: Diagnostic ping\nASSISTANT: HQ Intake Processed\n\nWhat HQ detected\n- Diagnostic ping message confirming system connectivity\n\nWhere HQ routed it\n- Intake Catch-All\n\nWhat it changes\n- No operational changes; system status confirmed as live\n\nRecommended action\n- No action needed; system operational\n\nApproval needed\n- None\n\nSignal status\n- None",
+  "recentTurns": [
+    {
+      "role": "user",
+      "text": "What is Megan HQ?",
+      "createdAt": "2026-03-14T19:19:26.573Z"
+    },
+    {
+      "role": "user",
+      "text": "Diagnostic ping from ChatGPT to Megan Campaign HQ hqChat endpoint",
+      "createdAt": "2026-03-14T19:27:35.054Z"
+    },
+    {
+      "role": "user",
+      "text": "Diagnostic ping",
+      "createdAt": "2026-03-14T19:46:32.731Z"
+    },
+    {
+      "role": "assistant",
+      "text": "HQ Intake Processed\n\nWhat HQ detected\n- Diagnostic ping message confirming system connectivity\n\nWhere HQ routed it\n- Intake Catch-All\n\nWhat it changes\n- No operational changes; system status confirmed as live\n\nRecommended action\n- No action needed; system operational\n\nApproval needed\n- None\n\nSignal status\n- None",
+      "createdAt": "2026-03-14T19:46:35.052Z"
+    }
+  ]
+}

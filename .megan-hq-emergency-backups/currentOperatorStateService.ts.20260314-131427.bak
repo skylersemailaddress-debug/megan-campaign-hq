@@ -1,0 +1,111 @@
+﻿import fs from "fs";
+import path from "path";
+
+type SessionTurn = {
+  role: "user" | "assistant";
+  text: string;
+  createdAt: string;
+};
+
+type OperatorState = {
+  updatedAt: string;
+  activeSessionId: string;
+  lastUserMessage: string;
+  lastAssistantMessage: string;
+  sessionSummary: string;
+  recentTurns: SessionTurn[];
+  currentObjective: string;
+  nextRecommendedAction: string;
+  activeErrors: string[];
+};
+
+function getRuntimeDir(): string {
+  return path.resolve(process.cwd(), "../../brain/runtime_sessions");
+}
+
+function ensureRuntimeDir(): void {
+  fs.mkdirSync(getRuntimeDir(), { recursive: true });
+}
+
+function getCurrentStatePath(): string {
+  return path.join(getRuntimeDir(), "current_operator_state.json");
+}
+
+function getLatestSummaryPath(): string {
+  return path.join(getRuntimeDir(), "latest_session_summary.json");
+}
+
+function inferCurrentObjective(turns: SessionTurn[]): string {
+  const lastUser = [...turns].reverse().find((t) => t.role === "user");
+  return lastUser?.text?.slice(0, 500) || "";
+}
+
+function inferNextAction(lastAssistantMessage: string): string {
+  const lines = String(lastAssistantMessage || "").split("\\n").map((x) => x.trim()).filter(Boolean);
+  const hit = lines.find((line) =>
+    line.toLowerCase().includes("recommended action") ||
+    line.toLowerCase().includes("next step") ||
+    line.toLowerCase().includes("run this")
+  );
+  return hit || "";
+}
+
+export function writeCurrentOperatorState(params: {
+  sessionId: string;
+  sessionSummary: string;
+  recentTurns: SessionTurn[];
+  lastUserMessage: string;
+  lastAssistantMessage: string;
+}) {
+  ensureRuntimeDir();
+
+  const state: OperatorState = {
+    updatedAt: new Date().toISOString(),
+    activeSessionId: params.sessionId,
+    lastUserMessage: params.lastUserMessage.slice(0, 4000),
+    lastAssistantMessage: params.lastAssistantMessage.slice(0, 8000),
+    sessionSummary: params.sessionSummary.slice(0, 12000),
+    recentTurns: (params.recentTurns || []).slice(-8),
+    currentObjective: inferCurrentObjective(params.recentTurns || []),
+    nextRecommendedAction: inferNextAction(params.lastAssistantMessage),
+    activeErrors: []
+  };
+
+  fs.writeFileSync(getCurrentStatePath(), JSON.stringify(state, null, 2), "utf8");
+
+  fs.writeFileSync(
+    getLatestSummaryPath(),
+    JSON.stringify(
+      {
+        updatedAt: new Date().toISOString(),
+        sessionId: params.sessionId,
+        summary: params.sessionSummary,
+        recentTurns: (params.recentTurns || []).slice(-8)
+      },
+      null,
+      2
+    ),
+    "utf8"
+  );
+}
+
+export function loadCurrentOperatorState(): any {
+  ensureRuntimeDir();
+
+  const filePath = getCurrentStatePath();
+  if (!fs.existsSync(filePath)) {
+    return {
+      updatedAt: "",
+      activeSessionId: "",
+      lastUserMessage: "",
+      lastAssistantMessage: "",
+      sessionSummary: "",
+      recentTurns: [],
+      currentObjective: "",
+      nextRecommendedAction: "",
+      activeErrors: []
+    };
+  }
+
+  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+}
